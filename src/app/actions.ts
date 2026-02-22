@@ -80,7 +80,7 @@ export async function updateTaskStatus(taskId: string, newStatus: string) {
     details: { from: task.status, to: parsed.status },
   });
 
-  revalidatePath("/projects/[id]", "page");
+  revalidatePath(`/projects/${task.projectId}`);
   revalidatePath("/dashboard");
 }
 
@@ -223,7 +223,8 @@ export async function addComment(formData: FormData) {
     userId: session.id,
   });
 
-  revalidatePath("/projects/[id]", "page");
+  revalidatePath(`/projects/${task.projectId}`);
+  revalidatePath("/dashboard");
 }
 
 // ── Project actions ───────────────────────────────────
