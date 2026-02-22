@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   DndContext,
   DragEndEvent,
@@ -66,7 +67,14 @@ export default function KanbanBoard({
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [addingToColumn, setAddingToColumn] = useState<string | null>(null);
+
+  // Sync with server data when router.refresh() delivers fresh props
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
   const { toast } = useToast();
+  const router = useRouter();
+  const [, startTransition] = useTransition();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -88,11 +96,20 @@ export default function KanbanBoard({
     const task = tasks.find((t) => t.id === taskId);
     if (!task || task.status === newStatus) return;
 
+    const snapshot = tasks;
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
     );
     toast(`Task moved to ${statusLabels[newStatus] || newStatus}`);
-    updateTaskStatus(taskId, newStatus);
+    startTransition(async () => {
+      try {
+        await updateTaskStatus(taskId, newStatus);
+        router.refresh();
+      } catch {
+        setTasks(snapshot);
+        toast("Failed to move task", "error");
+      }
+    });
   }
 
   async function handleCreateTask(formData: FormData) {
@@ -123,6 +140,7 @@ export default function KanbanBoard({
     try {
       await createTask(formData);
       toast("Task created");
+      router.refresh();
     } catch {
       // Roll back on failure
       setTasks((prev) => prev.filter((t) => t.id !== tempId));
@@ -159,6 +177,7 @@ export default function KanbanBoard({
     try {
       await updateTask(formData);
       toast("Task updated");
+      router.refresh();
     } catch {
       setTasks(snapshot);
       toast("Failed to update task", "error");
