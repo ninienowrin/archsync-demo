@@ -502,6 +502,95 @@ export default async function DashboardPage({
               })}
             </div>
           </section>
+
+          {/* Task Distribution + Discipline Overview — side by side */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* Task Distribution */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+              <h2 className="mb-4 text-lg font-bold text-slate-900">
+                {!isAdmin ? "My Task Distribution" : "Task Distribution"}
+              </h2>
+              {/* Donut chart via conic-gradient */}
+              <div className="mb-5 flex justify-center">
+                <div
+                  className="relative flex h-36 w-36 items-center justify-center rounded-full"
+                  style={{
+                    background: totalTasks > 0
+                      ? `conic-gradient(
+                          #10b981 0deg ${(distribution.done / totalTasks) * 360}deg,
+                          #f59e0b ${(distribution.done / totalTasks) * 360}deg ${((distribution.done + distribution.review) / totalTasks) * 360}deg,
+                          #3b82f6 ${((distribution.done + distribution.review) / totalTasks) * 360}deg ${((distribution.done + distribution.review + distribution.in_progress) / totalTasks) * 360}deg,
+                          #cbd5e1 ${((distribution.done + distribution.review + distribution.in_progress) / totalTasks) * 360}deg 360deg
+                        )`
+                      : "#e2e8f0",
+                  }}
+                >
+                  <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white shadow-lg shadow-black/5 ring-1 ring-slate-100">
+                    <span className="text-3xl font-extrabold text-slate-900 metric-value">
+                      {totalTasks}
+                    </span>
+                    <span className="text-[10px] font-medium text-slate-400">
+                      {!isAdmin ? "my tasks" : "tasks"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Legend */}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                {(
+                  [
+                    ["done", "Completed", "bg-emerald-500"],
+                    ["review", "In Review", "bg-amber-500"],
+                    ["in_progress", "In Progress", "bg-blue-500"],
+                    ["backlog", "Backlog", "bg-slate-300"],
+                  ] as const
+                ).map(([key, label, color]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
+                    <span className="text-xs text-slate-500">
+                      {label}
+                    </span>
+                    <span className="ml-auto text-xs font-semibold text-slate-700">
+                      {distribution[key]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Discipline Overview */}
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+              <h2 className="mb-4 text-lg font-bold text-slate-900">Discipline Overview</h2>
+              {disciplineSorted.length === 0 ? (
+                <p className="py-4 text-center text-sm text-slate-400">
+                  No discipline data yet
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {disciplineSorted.map(([tag, count]) => {
+                    const tc = tagColors[tag] ?? { bg: "bg-slate-100", text: "text-slate-600" };
+                    const widthPct = Math.max((count / maxDisciplineCount) * 100, 6);
+                    return (
+                      <div key={tag}>
+                        <div className="mb-1 flex items-center justify-between">
+                          <span className={`rounded-full px-1.5 py-[1px] text-[10px] font-medium ${tc.bg} ${tc.text}`}>
+                            {tag}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">{count}</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-slate-100/80">
+                          <div
+                            className={`h-full rounded-full transition-all ${tc.bg}`}
+                            style={{ width: `${widthPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </div>
         </div>
 
         {/* Right Column — 1/3 width */}
@@ -597,92 +686,6 @@ export default async function DashboardPage({
                 );
               })}
             </div>
-          </section>
-
-          {/* Task Distribution */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
-            <h2 className="mb-4 text-lg font-bold text-slate-900">
-              {!isAdmin ? "My Task Distribution" : "Task Distribution"}
-            </h2>
-            {/* Donut chart via conic-gradient */}
-            <div className="mb-5 flex justify-center">
-              <div
-                className="relative flex h-36 w-36 items-center justify-center rounded-full"
-                style={{
-                  background: totalTasks > 0
-                    ? `conic-gradient(
-                        #10b981 0deg ${(distribution.done / totalTasks) * 360}deg,
-                        #f59e0b ${(distribution.done / totalTasks) * 360}deg ${((distribution.done + distribution.review) / totalTasks) * 360}deg,
-                        #3b82f6 ${((distribution.done + distribution.review) / totalTasks) * 360}deg ${((distribution.done + distribution.review + distribution.in_progress) / totalTasks) * 360}deg,
-                        #cbd5e1 ${((distribution.done + distribution.review + distribution.in_progress) / totalTasks) * 360}deg 360deg
-                      )`
-                    : "#e2e8f0",
-                }}
-              >
-                <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white shadow-lg shadow-black/5 ring-1 ring-slate-100">
-                  <span className="text-3xl font-extrabold text-slate-900 metric-value">
-                    {totalTasks}
-                  </span>
-                  <span className="text-[10px] font-medium text-slate-400">
-                    {!isAdmin ? "my tasks" : "tasks"}
-                  </span>
-                </div>
-              </div>
-            </div>
-            {/* Legend */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              {(
-                [
-                  ["done", "Completed", "bg-emerald-500"],
-                  ["review", "In Review", "bg-amber-500"],
-                  ["in_progress", "In Progress", "bg-blue-500"],
-                  ["backlog", "Backlog", "bg-slate-300"],
-                ] as const
-              ).map(([key, label, color]) => (
-                <div key={key} className="flex items-center gap-2">
-                  <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
-                  <span className="text-xs text-slate-500">
-                    {label}
-                  </span>
-                  <span className="ml-auto text-xs font-semibold text-slate-700">
-                    {distribution[key]}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Discipline Overview */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
-            <h2 className="mb-4 text-lg font-bold text-slate-900">Discipline Overview</h2>
-            {disciplineSorted.length === 0 ? (
-              <p className="py-4 text-center text-sm text-slate-400">
-                No discipline data yet
-              </p>
-            ) : (
-              <div className="space-y-2.5">
-                {disciplineSorted.map(([tag, count]) => {
-                  const tc = tagColors[tag] ?? { bg: "bg-slate-100", text: "text-slate-600" };
-                  const widthPct = Math.max((count / maxDisciplineCount) * 100, 6);
-                  return (
-                    <div key={tag}>
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className={`rounded-full px-1.5 py-[1px] text-[10px] font-medium ${tc.bg} ${tc.text}`}>
-                          {tag}
-                        </span>
-                        <span className="text-xs font-medium text-slate-500">{count}</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-slate-100/80">
-                        <div
-                          className={`h-full rounded-full transition-all ${tc.bg}`}
-                          style={{ width: `${widthPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </section>
 
           {/* Team Workload — Admin & PM only */}
