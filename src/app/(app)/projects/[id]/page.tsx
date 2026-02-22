@@ -1,0 +1,268 @@
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import KanbanBoard from "@/components/KanbanBoard";
+import ProjectSettings from "@/components/ProjectSettings";
+import ProjectDescription from "@/components/ProjectDescription";
+import { PROJECT_PHASES, tagColors } from "@/lib/constants";
+
+export default async function ProjectPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const session = await getSession();
+  const systemRole = session?.systemRole ?? "employee";
+
+  const project = await prisma.project.findUnique({
+    where: { id },
+    include: {
+      tasks: {
+        include: {
+          assignee: { select: { id: true, name: true, role: true } },
+          comments: {
+            include: { author: { select: { id: true, name: true } } },
+            orderBy: { createdAt: "asc" },
+          },
+        },
+        orderBy: { position: "asc" },
+      },
+    },
+  });
+
+  if (!project) notFound();
+
+  const members = await prisma.user.findMany({
+    select: { id: true, name: true, role: true },
+    orderBy: { name: "asc" },
+  });
+
+  const serializedTasks = project.tasks.map((t) => ({
+    ...t,
+    dueDate: t.dueDate?.toISOString() ?? null,
+    createdAt: t.createdAt.toISOString(),
+    updatedAt: t.updatedAt.toISOString(),
+    comments: t.comments.map((c) => ({
+      ...c,
+      createdAt: c.createdAt.toISOString(),
+      updatedAt: c.updatedAt.toISOString(),
+    })),
+  }));
+
+  const total = project.tasks.length;
+  const done = project.tasks.filter((t) => t.status === "done").length;
+  const inProg = project.tasks.filter((t) => t.status === "in_progress").length;
+  const review = project.tasks.filter((t) => t.status === "review").length;
+  const backlog = project.tasks.filter((t) => t.status === "backlog").length;
+  const progress = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  const now = new Date();
+  const overdue = project.tasks.filter(
+    (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done"
+  ).length;
+
+  // Unique assignees
+  const assignees = Array.from(
+    new Map(
+      project.tasks
+        .filter((t) => t.assignee)
+        .map((t) => [t.assignee!.id, t.assignee!])
+    ).values()
+  );
+
+  // Discipline tag counts
+  const disciplineCounts: Record<string, number> = {};
+  for (const task of project.tasks) {
+    for (const tag of task.tags) {
+      disciplineCounts[tag] = (disciplineCounts[tag] || 0) + 1;
+    }
+  }
+  const topDisciplines = Object.entries(disciplineCounts)
+    .sort((a, b) => b[1] - a[1]);
+
+  // Phase stepper
+  const currentPhaseIdx = PROJECT_PHASES.findIndex((p) => p.value === project.phase);
+
+  return (
+    <div>
+      {/* Breadcrumb */}
+      <Link
+        href="/dashboard"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-indigo-600"
+      >
+        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Dashboard
+      </Link>
+
+      {/* Project Header Card */}
+      <div className="mb-6 relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-blue-500" />
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-slate-900">
+              {project.name}
+            </h1>
+            <ProjectDescription text={project.description} />
+          </div>
+
+          {/* Assignee avatars + settings */}
+          <div className="flex items-center gap-3">
+          {systemRole !== "employee" && (
+            <ProjectSettings
+              project={{ id: project.id, name: project.name, description: project.description, status: project.status, phase: project.phase }}
+              systemRole={systemRole}
+            />
+          )}
+          <div className="flex -space-x-2">
+            {assignees.slice(0, 4).map((a) => {
+              const initials = a.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("");
+              const avatarIdx = a.name.charCodeAt(0) % 6;
+              return (
+                <div
+                  key={a.id}
+                  title={a.name}
+                  className={`avatar-gradient-${avatarIdx} flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-semibold text-white shadow-sm`}
+                >
+                  {initials}
+                </div>
+              );
+            })}
+            {assignees.length > 4 && (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-medium text-slate-500">
+                +{assignees.length - 4}
+              </div>
+            )}
+          </div>
+          </div>
+        </div>
+
+        {/* Phase stepper */}
+        <div className="mt-5 flex items-center gap-1">
+          {PROJECT_PHASES.map((phase, idx) => {
+            const isCurrent = idx === currentPhaseIdx;
+            const isPast = idx < currentPhaseIdx;
+            return (
+              <div key={phase.value} className="flex items-center">
+                {idx > 0 && (
+                  <div className={`h-0.5 w-8 ${isPast ? "bg-emerald-400" : "bg-slate-200"}`} />
+                )}
+                <div
+                  title={phase.label}
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                    isCurrent
+                      ? `${phase.color} text-white shadow-sm`
+                      : isPast
+                        ? "bg-emerald-100 text-emerald-600"
+                        : "bg-slate-100 text-slate-400"
+                  }`}
+                >
+                  {isPast ? (
+                    <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                  ) : (
+                    phase.short
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Discipline tags */}
+        {topDisciplines.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {topDisciplines.map(([tag, count]) => {
+              const tc = tagColors[tag] || { bg: "bg-slate-100", text: "text-slate-600" };
+              return (
+                <span
+                  key={tag}
+                  className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${tc.bg} ${tc.text}`}
+                >
+                  {tag}
+                  <span className="rounded-full bg-white/60 px-1 text-[10px] font-semibold">
+                    {count}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Mini stat row */}
+        <div className="mt-5 flex items-center gap-6">
+          <div className="flex items-center gap-5">
+            <MiniStat label="Backlog" value={backlog} color="bg-slate-400" />
+            <MiniStat label="In Progress" value={inProg} color="bg-blue-500" />
+            <MiniStat label="Review" value={review} color="bg-amber-500" />
+            <MiniStat label="Done" value={done} color="bg-emerald-500" />
+            {overdue > 0 && (
+              <MiniStat label="Overdue" value={overdue} color="bg-red-500" />
+            )}
+          </div>
+
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-sm font-semibold text-slate-700">
+              {progress}%
+            </span>
+            <div className="h-2.5 w-36 overflow-hidden rounded-full bg-slate-100/80">
+              <div className="flex h-full">
+                {done > 0 && (
+                  <div
+                    className="bg-emerald-500"
+                    style={{ width: `${(done / total) * 100}%` }}
+                  />
+                )}
+                {review > 0 && (
+                  <div
+                    className="bg-amber-400"
+                    style={{ width: `${(review / total) * 100}%` }}
+                  />
+                )}
+                {inProg > 0 && (
+                  <div
+                    className="bg-blue-400"
+                    style={{ width: `${(inProg / total) * 100}%` }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <KanbanBoard
+        initialTasks={serializedTasks}
+        projectId={project.id}
+        members={members}
+      />
+    </div>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number;
+  color: string;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`h-2 w-2 rounded-full ${color}`} />
+      <span className="text-xs text-slate-500">
+        {label}
+      </span>
+      <span className="text-xs font-semibold text-slate-700">{value}</span>
+    </div>
+  );
+}
