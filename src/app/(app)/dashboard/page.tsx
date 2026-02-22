@@ -67,7 +67,7 @@ export default async function DashboardPage({
       // Scope tasks for stats: non-admins only see their own
       prisma.task.findMany({
         where: isAdmin ? undefined : { assigneeId: session!.id },
-        select: { id: true, status: true, priority: true, dueDate: true, assigneeId: true, tags: true },
+        select: { id: true, status: true, priority: true, dueDate: true, assigneeId: true, tags: true, estimatedHours: true },
       }),
       // Only fetch team workload data for admin/PM (employees skip this)
       isEmployee
@@ -128,6 +128,13 @@ export default async function DashboardPage({
     (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done"
   ).length;
   const completionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+
+  // ── Hours stats ──
+  const totalHours = allTasks.reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
+  const completedHours = allTasks
+    .filter((t) => t.status === "done")
+    .reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
+  const remainingHours = totalHours - completedHours;
 
   // Task distribution for donut chart
   const distribution = {
@@ -264,6 +271,15 @@ export default async function DashboardPage({
           </>
         )}
       </div>
+
+      {/* ── Hours Cards ──────────────────────────────────── */}
+      {totalHours > 0 && (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+          <HoursCard label={isAdmin ? "Total Hours" : "My Hours"} value={totalHours} icon="clock" />
+          <HoursCard label="Hours Done" value={completedHours} icon="check" />
+          <HoursCard label="Hours Left" value={remainingHours} icon="remaining" />
+        </div>
+      )}
 
       {/* ── Main Grid ──────────────────────────────────── */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
@@ -819,6 +835,41 @@ function MetricCard({
       <p className="relative text-sm font-medium text-white/80">{label}</p>
       <p className="relative mt-2 text-4xl font-extrabold tracking-tight metric-value text-white">{value}</p>
       <p className="relative mt-1 text-xs text-white/60">{sub}</p>
+    </div>
+  );
+}
+
+/* ── Hours Card ─────────────────────────────────────── */
+
+function HoursCard({ label, value, icon }: { label: string; value: number; icon: "clock" | "check" | "remaining" }) {
+  const display = Number.isInteger(value) ? value : value.toFixed(1);
+  const iconMap = {
+    clock: (
+      <svg className="h-5 w-5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    check: (
+      <svg className="h-5 w-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    remaining: (
+      <svg className="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" />
+      </svg>
+    ),
+  };
+
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50">
+        {iconMap[icon]}
+      </div>
+      <div>
+        <p className="text-2xl font-extrabold tracking-tight text-slate-900 metric-value">{display}h</p>
+        <p className="text-xs text-slate-500">{label}</p>
+      </div>
     </div>
   );
 }

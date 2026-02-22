@@ -8,6 +8,7 @@ export const createTaskSchema = z.object({
   status: z.enum(["backlog", "in_progress", "review", "done"]).default("backlog"),
   assigneeId: z.string().min(1).optional(),
   dueDate: z.string().optional(),
+  estimatedHours: z.coerce.number().min(0).max(9999).optional(),
   tags: z.array(z.string()).default([]),
 });
 
@@ -20,6 +21,7 @@ export const updateTaskSchema = z.object({
   status: z.enum(["backlog", "in_progress", "review", "done"]),
   assigneeId: z.string().nullable(),
   dueDate: z.string().nullable(),
+  estimatedHours: z.coerce.number().min(0).max(9999).nullable(),
   tags: z.array(z.string()).default([]),
 });
 

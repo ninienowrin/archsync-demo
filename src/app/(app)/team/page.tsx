@@ -25,7 +25,7 @@ export default async function TeamPage() {
   const memberStats = await prisma.user.findMany({
     select: {
       id: true,
-      tasks: { select: { status: true } },
+      tasks: { select: { status: true, estimatedHours: true } },
     },
   });
 
@@ -38,6 +38,8 @@ export default async function TeamPage() {
         in_progress: m.tasks.filter((t) => t.status === "in_progress").length,
         review: m.tasks.filter((t) => t.status === "review").length,
         done: m.tasks.filter((t) => t.status === "done").length,
+        totalHours: m.tasks.reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0),
+        completedHours: m.tasks.filter((t) => t.status === "done").reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0),
       },
     ])
   );
@@ -63,7 +65,7 @@ export default async function TeamPage() {
             .join("");
           const avatarIdx = member.name.charCodeAt(0) % 6;
           const stats = statsMap.get(member.id) ?? {
-            total: 0, backlog: 0, in_progress: 0, review: 0, done: 0,
+            total: 0, backlog: 0, in_progress: 0, review: 0, done: 0, totalHours: 0, completedHours: 0,
           };
           const completionRate =
             stats.total > 0
@@ -122,6 +124,19 @@ export default async function TeamPage() {
                   <span>{stats.review} review</span>
                   <span>{stats.done} done</span>
                 </div>
+                {stats.totalHours > 0 && (
+                  <div className="mt-2 flex items-center gap-2 text-xs">
+                    <span className="flex items-center gap-1 rounded bg-violet-50 px-1.5 py-0.5 font-medium text-violet-600">
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {Number.isInteger(stats.totalHours) ? stats.totalHours : stats.totalHours.toFixed(1)}h total
+                    </span>
+                    <span className="rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-600">
+                      {Number.isInteger(stats.completedHours) ? stats.completedHours : stats.completedHours.toFixed(1)}h done
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Active tasks */}

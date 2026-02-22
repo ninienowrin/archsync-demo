@@ -25,7 +25,7 @@ export default function SidebarWrapper({
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-[#111318]/80 text-slate-300 shadow-xl shadow-black/30 backdrop-blur-xl lg:hidden"
+        className="fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-[#1a0a10]/80 text-slate-300 shadow-xl shadow-black/30 backdrop-blur-xl lg:hidden"
         aria-label="Open sidebar"
       >
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

@@ -36,6 +36,7 @@ type Task = {
   status: string;
   priority: string;
   tags: string[];
+  estimatedHours: number | null;
   dueDate: string | null;
   position: number;
   projectId: string;
@@ -126,6 +127,7 @@ export default function KanbanBoard({
       status,
       priority: (formData.get("priority") as string) || "medium",
       tags: formData.getAll("tags") as string[],
+      estimatedHours: formData.get("estimatedHours") ? Number(formData.get("estimatedHours")) : null,
       dueDate: null,
       position: tasks.length,
       projectId,
@@ -157,6 +159,7 @@ export default function KanbanBoard({
     const status = formData.get("status") as string;
     const assigneeId = formData.get("assigneeId") as string;
     const dueDate = formData.get("dueDate") as string;
+    const estimatedHours = formData.get("estimatedHours") ? Number(formData.get("estimatedHours")) : null;
     const tags = formData.getAll("tags") as string[];
 
     const assignee = assigneeId
@@ -169,7 +172,7 @@ export default function KanbanBoard({
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
-          ? { ...t, title, description, priority, status, assigneeId: assigneeId || null, assignee, dueDate: dueDate || null, tags }
+          ? { ...t, title, description, priority, status, assigneeId: assigneeId || null, assignee, dueDate: dueDate || null, estimatedHours, tags }
           : t
       )
     );
@@ -385,6 +388,14 @@ function InlineAddTask({
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
+        <input
+          name="estimatedHours"
+          type="number"
+          min="0"
+          step="0.5"
+          placeholder="Hrs"
+          className="w-14 rounded border border-slate-200 px-2 py-1 text-xs text-slate-600 outline-none"
+        />
         <div className="flex-1" />
         <button
           type="button"
@@ -510,6 +521,12 @@ function TaskCard({ task, overlay }: { task: Task; overlay?: boolean }) {
           <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${priority.className}`}>
             {priority.label}
           </span>
+          {task.estimatedHours != null && (
+            <span className="flex items-center gap-0.5 text-[10px] text-slate-400">
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {task.estimatedHours}h
+            </span>
+          )}
           {dueDate && (
             <span className={`text-[10px] ${isOverdue ? "pulse-overdue font-medium text-red-500" : "text-slate-400"}`}>
               {dueDate}
@@ -686,6 +703,21 @@ function TaskModal({
                   type="date"
                   name="dueDate"
                   defaultValue={task.dueDate ? task.dueDate.split("T")[0] : ""}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  Est. Hours
+                </label>
+                <input
+                  type="number"
+                  name="estimatedHours"
+                  min="0"
+                  step="0.5"
+                  defaultValue={task.estimatedHours ?? ""}
+                  placeholder="0"
                   className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-indigo-400"
                 />
               </div>

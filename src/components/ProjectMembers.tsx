@@ -15,6 +15,8 @@ type MemberStats = {
   reviewTasks: number;
   backlogTasks: number;
   completionRate: number;
+  totalHours: number;
+  completedHours: number;
 };
 
 type SimpleUser = { id: string; name: string; role: string };
@@ -183,8 +185,8 @@ export default function ProjectMembers({
                   )}
 
                   <div className="flex items-center justify-between text-[10px] text-slate-400">
-                    <span>{member.totalTasks} tasks</span>
-                    <span>{member.completionRate}% done</span>
+                    <span>{member.totalTasks} tasks{member.totalHours > 0 ? ` · ${Number.isInteger(member.totalHours) ? member.totalHours : member.totalHours.toFixed(1)}h` : ""}</span>
+                    <span>{member.completionRate}% done{member.totalHours > 0 ? ` · ${Number.isInteger(member.completedHours) ? member.completedHours : member.completedHours.toFixed(1)}h done` : ""}</span>
                   </div>
 
                   {/* Stat chips */}
@@ -201,6 +203,11 @@ export default function ProjectMembers({
                     <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
                       {member.backlogTasks} backlog
                     </span>
+                    {member.totalHours > 0 && (
+                      <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-600">
+                        {Number.isInteger(member.totalHours) ? member.totalHours : member.totalHours.toFixed(1)}h total
+                      </span>
+                    )}
                   </div>
                 </div>
 

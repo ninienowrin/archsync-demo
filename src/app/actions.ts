@@ -94,6 +94,7 @@ export async function createTask(formData: FormData) {
     status: formData.get("status") || "backlog",
     assigneeId: formData.get("assigneeId") || undefined,
     dueDate: formData.get("dueDate") || undefined,
+    estimatedHours: formData.get("estimatedHours") || undefined,
     tags: formData.getAll("tags"),
   });
 
@@ -113,6 +114,7 @@ export async function createTask(formData: FormData) {
       projectId: parsed.projectId,
       assigneeId: parsed.assigneeId || null,
       dueDate,
+      estimatedHours: parsed.estimatedHours ?? null,
       tags: parsed.tags,
       position: (maxPosition._max.position ?? -1) + 1,
     },
@@ -141,6 +143,7 @@ export async function updateTask(formData: FormData) {
     status: formData.get("status"),
     assigneeId: formData.get("assigneeId") || null,
     dueDate: formData.get("dueDate") || null,
+    estimatedHours: formData.get("estimatedHours") || null,
     tags: formData.getAll("tags"),
   });
 
@@ -155,6 +158,7 @@ export async function updateTask(formData: FormData) {
       status: parsed.status,
       assigneeId: parsed.assigneeId,
       dueDate,
+      estimatedHours: parsed.estimatedHours,
       tags: parsed.tags,
     },
   });

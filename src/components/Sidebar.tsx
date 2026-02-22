@@ -65,10 +65,10 @@ export default function Sidebar({
   const [loggingOut, startLogout] = useTransition();
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-white/[0.06] bg-[#111318]/90 text-slate-400 backdrop-blur-2xl backdrop-saturate-150">
+    <aside className="flex h-screen w-64 flex-col border-r border-white/[0.06] bg-[#1a0a10]/90 text-slate-400 backdrop-blur-2xl backdrop-saturate-150">
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-base font-bold text-white shadow-lg shadow-violet-500/30">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 via-pink-500 to-purple-600 text-base font-bold text-white shadow-lg shadow-rose-500/30">
           A
         </div>
         <div>
@@ -89,7 +89,7 @@ export default function Sidebar({
                 onClick={onNavigate}
                 className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                   active
-                    ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-400 before:shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                    ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-rose-400 before:shadow-[0_0_8px_rgba(251,113,133,0.5)]"
                     : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200"
                 }`}
               >
@@ -119,7 +119,7 @@ export default function Sidebar({
                   onClick={onNavigate}
                   className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
                     active
-                      ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-400 before:shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                      ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-rose-400 before:shadow-[0_0_8px_rgba(251,113,133,0.5)]"
                       : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200"
                   }`}
                 >

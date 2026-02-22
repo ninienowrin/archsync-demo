@@ -76,6 +76,13 @@ export default async function ProjectPage({
   const backlog = project.tasks.filter((t) => t.status === "backlog").length;
   const progress = total > 0 ? Math.round((done / total) * 100) : 0;
 
+  // ── Hours stats ──
+  const totalHours = project.tasks.reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
+  const completedHours = project.tasks
+    .filter((t) => t.status === "done")
+    .reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
+  const remainingHours = totalHours - completedHours;
+
   const now = new Date();
   const overdue = project.tasks.filter(
     (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done"
@@ -111,6 +118,11 @@ export default async function ProjectPage({
     const memberInProgress = memberTasks.filter((t) => t.status === "in_progress").length;
     const memberReview = memberTasks.filter((t) => t.status === "review").length;
     const memberBacklog = memberTasks.filter((t) => t.status === "backlog").length;
+    const memberTotalHours = memberTasks.reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
+    const memberCompletedHours = memberTasks
+      .filter((t) => t.status === "done")
+      .reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
+
     return {
       id: pm.user.id,
       name: pm.user.name,
@@ -122,6 +134,8 @@ export default async function ProjectPage({
       reviewTasks: memberReview,
       backlogTasks: memberBacklog,
       completionRate: memberTotal > 0 ? Math.round((memberDone / memberTotal) * 100) : 0,
+      totalHours: memberTotalHours,
+      completedHours: memberCompletedHours,
     };
   });
 
@@ -157,6 +171,9 @@ export default async function ProjectPage({
     backlog,
     overdue,
     completionRate: progress,
+    totalHours,
+    completedHours,
+    remainingHours,
   };
 
   const distribution = { done, review, in_progress: inProg, backlog };
@@ -282,6 +299,14 @@ export default async function ProjectPage({
             {overdue > 0 && (
               <MiniStat label="Overdue" value={overdue} color="bg-red-500" />
             )}
+            {totalHours > 0 && (
+              <>
+                <span className="hidden sm:inline text-slate-200">|</span>
+                <MiniStat label="Total Hours" value={totalHours} color="bg-violet-500" />
+                <MiniStat label="Done" value={completedHours} color="bg-emerald-500" />
+                <MiniStat label="Remaining" value={remainingHours} color="bg-blue-500" />
+              </>
+            )}
           </div>
 
           <div className="ml-auto flex items-center gap-3">
@@ -355,13 +380,14 @@ function MiniStat({
   value: number;
   color: string;
 }) {
+  const display = Number.isInteger(value) ? value : value.toFixed(1);
   return (
     <div className="flex items-center gap-1.5">
       <span className={`h-2 w-2 rounded-full ${color}`} />
       <span className="text-xs text-slate-500">
         {label}
       </span>
-      <span className="text-xs font-semibold text-slate-700">{value}</span>
+      <span className="text-xs font-semibold text-slate-700">{display}</span>
     </div>
   );
 }
