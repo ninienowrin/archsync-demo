@@ -296,7 +296,7 @@ function DroppableColumn({
       ref={setNodeRef}
       role="group"
       aria-label={`${title} column, ${count} tasks`}
-      className={`flex min-h-[500px] flex-col rounded-2xl border border-slate-200 border-t-4 bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all ${color} ${
+      className={`flex min-h-[300px] flex-col rounded-2xl border border-slate-200 border-t-4 bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all md:min-h-[500px] ${color} ${
         isOver ? "ring-2 ring-indigo-400/50 bg-indigo-50/50 scale-[1.01] shadow-md shadow-indigo-500/5" : ""
       }`}
     >
@@ -549,7 +549,7 @@ function TaskModal({
 
   return (
     <div
-      className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-md"
+      className="modal-backdrop fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 backdrop-blur-md sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
@@ -557,7 +557,7 @@ function TaskModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-modal-title"
-        className="modal-content w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl shadow-black/20 ring-1 ring-black/[0.08]"
+        className="modal-content w-full max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl shadow-black/20 ring-1 ring-black/[0.08] sm:max-w-lg sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <form action={onSave}>
@@ -604,7 +604,7 @@ function TaskModal({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Status
@@ -637,7 +637,7 @@ function TaskModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
                   Assignee

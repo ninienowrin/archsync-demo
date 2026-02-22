@@ -82,7 +82,7 @@ export default function ProjectDashboard({
             <h3 className="mb-4 text-lg font-bold text-slate-900">Task Distribution</h3>
             <div className="mb-5 flex justify-center">
               <div
-                className="relative flex h-40 w-40 items-center justify-center rounded-full"
+                className="relative flex h-28 w-28 items-center justify-center rounded-full sm:h-40 sm:w-40"
                 style={{
                   background:
                     stats.total > 0
@@ -95,8 +95,8 @@ export default function ProjectDashboard({
                       : "#e2e8f0",
                 }}
               >
-                <div className="flex h-28 w-28 flex-col items-center justify-center rounded-full bg-white shadow-lg shadow-black/5 ring-1 ring-slate-100">
-                  <span className="text-3xl font-extrabold text-slate-900 metric-value">{stats.total}</span>
+                <div className="flex h-20 w-20 flex-col items-center justify-center rounded-full bg-white shadow-lg shadow-black/5 ring-1 ring-slate-100 sm:h-28 sm:w-28">
+                  <span className="text-2xl font-extrabold text-slate-900 metric-value sm:text-3xl">{stats.total}</span>
                   <span className="text-[10px] font-medium text-slate-400">tasks</span>
                 </div>
               </div>

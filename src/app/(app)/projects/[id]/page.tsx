@@ -175,9 +175,9 @@ export default async function ProjectPage({
       </Link>
 
       {/* Project Header Card */}
-      <div className="mb-6 relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
+      <div className="mb-6 relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-md sm:p-6">
         <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-blue-500" />
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1">
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
               {project.name}
@@ -220,7 +220,7 @@ export default async function ProjectPage({
         </div>
 
         {/* Phase stepper */}
-        <div className="mt-5 flex items-center gap-1">
+        <div className="mt-5 flex items-center gap-1 overflow-x-auto pb-1">
           {PROJECT_PHASES.map((phase, idx) => {
             const isCurrent = idx === currentPhaseIdx;
             const isPast = idx < currentPhaseIdx;
@@ -273,8 +273,8 @@ export default async function ProjectPage({
         )}
 
         {/* Mini stat row */}
-        <div className="mt-5 flex items-center gap-6">
-          <div className="flex items-center gap-5">
+        <div className="mt-5 flex flex-wrap items-center gap-3 sm:gap-6">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-5">
             <MiniStat label="Backlog" value={backlog} color="bg-slate-400" />
             <MiniStat label="In Progress" value={inProg} color="bg-blue-500" />
             <MiniStat label="Review" value={review} color="bg-amber-500" />
@@ -288,7 +288,7 @@ export default async function ProjectPage({
             <span className="text-lg font-extrabold text-slate-800 metric-value">
               {progress}%
             </span>
-            <div className="h-3 w-40 overflow-hidden rounded-full bg-slate-100 shadow-inner">
+            <div className="h-3 w-28 overflow-hidden rounded-full bg-slate-100 shadow-inner sm:w-40">
               <div className="flex h-full">
                 {done > 0 && (
                   <div

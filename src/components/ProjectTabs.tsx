@@ -48,19 +48,19 @@ export default function ProjectTabs({
   return (
     <div>
       {/* Tab bar */}
-      <div className="mb-6 inline-flex items-center gap-1 rounded-xl bg-slate-100 p-1">
+      <div className="mb-6 flex w-full items-center gap-1 rounded-xl bg-slate-100 p-1 sm:inline-flex sm:w-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-all sm:flex-initial sm:px-4 sm:py-2 sm:text-sm ${
               active === tab.id
                 ? "bg-white text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
             {tab.icon}
-            {tab.label}
+            <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}
       </div>

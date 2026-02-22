@@ -66,8 +66,8 @@ export default function ProjectMembers({
       {canManage && availableUsers.length > 0 && (
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
           <h3 className="mb-3 text-sm font-semibold text-slate-900">Add Team Member</h3>
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex-1 min-w-[200px]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div className="w-full sm:flex-1 sm:min-w-[200px]">
               <label className="mb-1 block text-xs font-medium text-slate-500">Person</label>
               <select
                 value={addUserId}
@@ -105,7 +105,7 @@ export default function ProjectMembers({
       )}
 
       {/* Member grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
         {members.map((member) => {
           const initials = member.name
             .split(" ")

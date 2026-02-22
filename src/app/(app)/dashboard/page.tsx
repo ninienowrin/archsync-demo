@@ -54,7 +54,9 @@ export default async function DashboardPage({
 
   const [projects, allTasks, members, myTasks, upcomingTasks, activities] =
     await Promise.all([
+      // Only fetch projects the user is a member of (admins see all)
       prisma.project.findMany({
+        where: isAdmin ? undefined : { members: { some: { userId: session!.id } } },
         include: {
           tasks: {
             select: { id: true, status: true, priority: true, assigneeId: true },
@@ -62,15 +64,20 @@ export default async function DashboardPage({
         },
         orderBy: { createdAt: "asc" },
       }),
+      // Scope tasks for stats: non-admins only see their own
       prisma.task.findMany({
+        where: isAdmin ? undefined : { assigneeId: session!.id },
         select: { id: true, status: true, priority: true, dueDate: true, assigneeId: true, tags: true },
       }),
-      prisma.user.findMany({
-        include: {
-          tasks: { select: { id: true, status: true } },
-        },
-        orderBy: { name: "asc" },
-      }),
+      // Only fetch team workload data for admin/PM (employees skip this)
+      isEmployee
+        ? ([] as Awaited<ReturnType<typeof prisma.user.findMany<{ include: { tasks: { select: { id: true; status: true } } } }>>>)
+        : prisma.user.findMany({
+            include: {
+              tasks: { select: { id: true, status: true } },
+            },
+            orderBy: { name: "asc" },
+          }),
       prisma.task.findMany({
         where: { assigneeId: session?.id },
         select: {
@@ -113,29 +120,26 @@ export default async function DashboardPage({
 
   const now = new Date();
 
-  // ── Scoped stats (admin = all tasks, PM/employee = my tasks) ──
-  const scopedTasks = isAdmin
-    ? allTasks
-    : allTasks.filter((t) => t.assigneeId === session?.id);
-  const totalTasks = scopedTasks.length;
-  const doneTasks = scopedTasks.filter((t) => t.status === "done").length;
-  const inProgressTasks = scopedTasks.filter((t) => t.status === "in_progress").length;
-  const overdueTasks = scopedTasks.filter(
+  // ── Stats (allTasks is already scoped by query) ──
+  const totalTasks = allTasks.length;
+  const doneTasks = allTasks.filter((t) => t.status === "done").length;
+  const inProgressTasks = allTasks.filter((t) => t.status === "in_progress").length;
+  const overdueTasks = allTasks.filter(
     (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done"
   ).length;
   const completionRate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
   // Task distribution for donut chart
   const distribution = {
-    backlog: scopedTasks.filter((t) => t.status === "backlog").length,
+    backlog: allTasks.filter((t) => t.status === "backlog").length,
     in_progress: inProgressTasks,
-    review: scopedTasks.filter((t) => t.status === "review").length,
+    review: allTasks.filter((t) => t.status === "review").length,
     done: doneTasks,
   };
 
   // ── Discipline counts ──
   const disciplineCount: Record<string, number> = {};
-  scopedTasks.forEach((t: any) => {
+  allTasks.forEach((t: any) => {
     (t.tags ?? []).forEach((tag: string) => {
       disciplineCount[tag] = (disciplineCount[tag] || 0) + 1;
     });
@@ -152,10 +156,7 @@ export default async function DashboardPage({
   if (params.priority) filteredActive = filteredActive.filter(t => t.priority === params.priority);
   if (params.tag) filteredActive = filteredActive.filter(t => t.tags.includes(params.tag!));
 
-  // Non-admin: only show projects they're involved in
-  const visibleProjects = isAdmin
-    ? projects
-    : projects.filter((p) => p.tasks.some((t) => t.assigneeId === session?.id));
+  // Projects are already scoped by membership in the query
 
   // My deadlines (for non-admin roles)
   const myOverdue = myTasks.filter(
@@ -174,10 +175,10 @@ export default async function DashboardPage({
   return (
     <div className="animate-fade-in-up space-y-6">
       {/* ── Header ─────────────────────────────────────── */}
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
               {greeting}, {session?.name.split(" ")[0]}
             </h1>
             {roleLabel && (
@@ -239,7 +240,7 @@ export default async function DashboardPage({
             <MetricCard
               label="My Tasks"
               value={totalTasks}
-              sub={`across ${visibleProjects.length} projects`}
+              sub={`across ${projects.length} projects`}
               accent="indigo"
             />
             <MetricCard
@@ -270,7 +271,7 @@ export default async function DashboardPage({
         <div className="space-y-6 xl:col-span-2">
           {/* My Tasks */}
           <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+            <div className="flex flex-col gap-2 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-5">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-bold text-slate-900">My Tasks</h2>
                 <span className="rounded-full bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-0.5 text-xs font-bold text-indigo-600 ring-1 ring-indigo-100">
@@ -279,7 +280,7 @@ export default async function DashboardPage({
               </div>
 
               {/* ── Filter Pills ── */}
-              <div className="flex items-center gap-2">
+              <div className="hidden items-center gap-2 lg:flex">
                 <div className="flex flex-wrap items-center gap-1">
                   {allPriorities.map((p) => {
                     const isActive = params.priority === p;
@@ -407,22 +408,19 @@ export default async function DashboardPage({
                 {!isAdmin ? "My Projects" : "Projects"}
               </h2>
               <span className="text-xs font-medium text-slate-400">
-                {visibleProjects.length} {!isAdmin ? "assigned" : "total"}
+                {projects.length} {!isAdmin ? "assigned" : "total"}
               </span>
             </div>
             <div className="p-6 space-y-5">
-              {visibleProjects.length === 0 && (
+              {projects.length === 0 && (
                 <EmptyState
                   icon="projects"
                   title="No projects yet"
                   description="Projects you're a member of will appear here"
                 />
               )}
-              {visibleProjects.map((project) => {
-                // Employee: show only their tasks in the project
-                const projectTasks = !isAdmin
-                  ? project.tasks.filter((t) => t.assigneeId === session?.id)
-                  : project.tasks;
+              {projects.map((project) => {
+                const projectTasks = project.tasks;
                 const total = projectTasks.length;
                 const done = projectTasks.filter((t) => t.status === "done").length;
                 const inProg = projectTasks.filter((t) => t.status === "in_progress").length;
