@@ -85,7 +85,12 @@ export default function LoginPage() {
             disabled={pending}
             className="w-full rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-500 py-3.5 text-sm font-bold text-white shadow-xl shadow-indigo-500/40 ring-1 ring-white/10 transition-all hover:from-indigo-500 hover:via-indigo-400 hover:to-violet-400 hover:shadow-2xl hover:shadow-indigo-500/50 hover:ring-white/20 active:scale-[0.97] disabled:opacity-40"
           >
-            {pending ? "Signing in..." : "Sign in"}
+            {pending ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                Signing in...
+              </span>
+            ) : "Sign in"}
           </button>
 
           <div className="mt-6 rounded-xl border border-white/[0.08] bg-white/[0.04] p-4">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 import { updateProject, archiveProject, deleteProject } from "@/app/actions";
 import { PROJECT_PHASES } from "@/lib/constants";
 import { useModalA11y } from "@/lib/useModalA11y";
@@ -16,6 +17,8 @@ type Project = {
 export default function ProjectSettings({ project, systemRole }: { project: Project; systemRole: string }) {
   const [open, setOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [archiving, startArchive] = useTransition();
+  const [deleting, startDelete] = useTransition();
   const closeModal = () => { setOpen(false); setConfirmDelete(false); };
   const modalRef = useModalA11y(open, closeModal);
 
@@ -123,10 +126,16 @@ export default function ProjectSettings({ project, systemRole }: { project: Proj
                       </span>
                       <button
                         type="button"
-                        onClick={() => deleteProject(project.id)}
-                        className="rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700"
+                        disabled={deleting}
+                        onClick={() => startDelete(() => deleteProject(project.id))}
+                        className="rounded bg-red-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
                       >
-                        Delete
+                        {deleting ? (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                            Deleting...
+                          </span>
+                        ) : "Delete"}
                       </button>
                       <button
                         type="button"
@@ -140,10 +149,16 @@ export default function ProjectSettings({ project, systemRole }: { project: Proj
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        onClick={() => archiveProject(project.id)}
-                        className="rounded px-2.5 py-1.5 text-xs text-amber-600 transition-colors hover:bg-amber-50"
+                        disabled={archiving}
+                        onClick={() => startArchive(() => archiveProject(project.id))}
+                        className="rounded px-2.5 py-1.5 text-xs text-amber-600 transition-colors hover:bg-amber-50 disabled:opacity-50"
                       >
-                        Archive
+                        {archiving ? (
+                          <span className="flex items-center gap-1.5">
+                            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                            Archiving...
+                          </span>
+                        ) : "Archive"}
                       </button>
                       {systemRole === "admin" && (
                         <button
@@ -165,13 +180,7 @@ export default function ProjectSettings({ project, systemRole }: { project: Proj
                   >
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    onClick={() => setOpen(false)}
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-500 active:scale-[0.98]"
-                  >
-                    Save
-                  </button>
+                  <SettingsSaveButton onSave={() => setOpen(false)} />
                 </div>
               </div>
             </form>
@@ -179,5 +188,24 @@ export default function ProjectSettings({ project, systemRole }: { project: Proj
         </div>
       )}
     </>
+  );
+}
+
+function SettingsSaveButton({ onSave }: { onSave: () => void }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      onClick={() => { if (!pending) onSave(); }}
+      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-500/20 hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-50"
+    >
+      {pending ? (
+        <span className="flex items-center gap-2">
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+          Saving...
+        </span>
+      ) : "Save"}
+    </button>
   );
 }

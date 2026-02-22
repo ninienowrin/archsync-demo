@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import { createProject } from "@/app/actions";
 import { PROJECT_PHASES } from "@/lib/constants";
 import { useModalA11y } from "@/lib/useModalA11y";
@@ -110,16 +111,29 @@ export default function CreateProjectModal() {
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-500 active:scale-[0.98]"
-              >
-                Create Project
-              </button>
+              <CreateSubmitButton />
             </div>
           </form>
         </div>
       </div>
     </>
+  );
+}
+
+function CreateSubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm shadow-indigo-500/20 transition-colors hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-50"
+    >
+      {pending ? (
+        <span className="flex items-center gap-2">
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+          Creating...
+        </span>
+      ) : "Create Project"}
+    </button>
   );
 }

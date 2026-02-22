@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useTransition } from "react";
+import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   DndContext,
@@ -544,13 +545,15 @@ function TaskModal({
   members: Member[];
   onClose: () => void;
   onSave: (formData: FormData) => void;
-  onDelete: () => void;
-  onComment: (taskId: string, body: string) => void;
+  onDelete: () => Promise<void>;
+  onComment: (taskId: string, body: string) => Promise<void>;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>(task.tags);
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [commenting, setCommenting] = useState(false);
   const tagDropdownRef = useRef<HTMLDivElement>(null);
   const modalRef = useModalA11y(true, onClose);
 
@@ -797,25 +800,34 @@ function TaskModal({
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Add a comment..."
                 className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && commentText.trim()) {
+                onKeyDown={async (e) => {
+                  if (e.key === "Enter" && commentText.trim() && !commenting) {
                     e.preventDefault();
-                    onComment(task.id, commentText.trim());
+                    setCommenting(true);
+                    const text = commentText.trim();
                     setCommentText("");
+                    await onComment(task.id, text);
+                    setCommenting(false);
                   }
                 }}
               />
               <button
                 type="button"
-                onClick={() => {
+                disabled={commenting || !commentText.trim()}
+                onClick={async () => {
                   if (commentText.trim()) {
-                    onComment(task.id, commentText.trim());
+                    setCommenting(true);
+                    const text = commentText.trim();
                     setCommentText("");
+                    await onComment(task.id, text);
+                    setCommenting(false);
                   }
                 }}
-                className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 disabled:opacity-50"
               >
-                Send
+                {commenting ? (
+                  <svg className="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                ) : "Send"}
               </button>
             </div>
           </div>
@@ -828,10 +840,16 @@ function TaskModal({
                   <span className="text-sm text-red-600">Delete this task?</span>
                   <button
                     type="button"
-                    onClick={onDelete}
-                    className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700"
+                    disabled={deleting}
+                    onClick={async () => { setDeleting(true); await onDelete(); }}
+                    className="rounded bg-red-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
                   >
-                    Confirm
+                    {deleting ? (
+                      <span className="flex items-center gap-1.5">
+                        <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                        Deleting...
+                      </span>
+                    ) : "Confirm"}
                   </button>
                   <button
                     type="button"
@@ -859,16 +877,29 @@ function TaskModal({
               >
                 Cancel
               </button>
-              <button
-                type="submit"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 active:scale-[0.98] shadow-sm shadow-indigo-500/20"
-              >
-                Save Changes
-              </button>
+              <SaveButton />
             </div>
           </div>
         </form>
       </div>
     </div>
+  );
+}
+
+function SaveButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500 active:scale-[0.98] shadow-sm shadow-indigo-500/20 disabled:opacity-50"
+    >
+      {pending ? (
+        <span className="flex items-center gap-2">
+          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+          Saving...
+        </span>
+      ) : "Save Changes"}
+    </button>
   );
 }
