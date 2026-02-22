@@ -32,7 +32,7 @@ export default async function AppLayout({
         Skip to content
       </a>
       <SidebarWrapper projects={projects} user={session} />
-      <main id="main-content" className="flex-1 overflow-y-auto bg-[#fafbfc] p-8 pt-16 lg:pt-8">
+      <main id="main-content" className="flex-1 overflow-y-auto bg-[#f0f2f5] p-8 pt-16 lg:pt-8">
         <ToastProvider>
           {children}
         </ToastProvider>

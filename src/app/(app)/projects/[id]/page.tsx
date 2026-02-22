@@ -86,11 +86,11 @@ export default async function ProjectPage({
   const currentPhaseIdx = PROJECT_PHASES.findIndex((p) => p.value === project.phase);
 
   return (
-    <div>
+    <div className="animate-fade-in-up">
       {/* Breadcrumb */}
       <Link
         href="/dashboard"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-slate-400 transition-colors hover:text-indigo-600"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-slate-400 transition-colors hover:text-indigo-600"
       >
         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -99,11 +99,11 @@ export default async function ProjectPage({
       </Link>
 
       {/* Project Header Card */}
-      <div className="mb-6 relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
-        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-blue-500" />
+      <div className="mb-6 relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-md">
+        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-blue-500" />
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">
               {project.name}
             </h1>
             <ProjectDescription text={project.description} />
@@ -151,15 +151,15 @@ export default async function ProjectPage({
             return (
               <div key={phase.value} className="flex items-center">
                 {idx > 0 && (
-                  <div className={`h-0.5 w-8 ${isPast ? "bg-emerald-400" : "bg-slate-200"}`} />
+                  <div className={`h-0.5 w-10 ${isPast ? "bg-emerald-400" : "bg-slate-200"}`} />
                 )}
                 <div
                   title={phase.label}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-colors ${
                     isCurrent
-                      ? `${phase.color} text-white shadow-sm`
+                      ? `${phase.color} text-white shadow-md ring-2 ring-white`
                       : isPast
-                        ? "bg-emerald-100 text-emerald-600"
+                        ? "bg-emerald-100 text-emerald-600 shadow-sm"
                         : "bg-slate-100 text-slate-400"
                   }`}
                 >
@@ -209,10 +209,10 @@ export default async function ProjectPage({
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            <span className="text-sm font-semibold text-slate-700">
+            <span className="text-lg font-extrabold text-slate-800 metric-value">
               {progress}%
             </span>
-            <div className="h-2.5 w-36 overflow-hidden rounded-full bg-slate-100/80">
+            <div className="h-3 w-40 overflow-hidden rounded-full bg-slate-100 shadow-inner">
               <div className="flex h-full">
                 {done > 0 && (
                   <div

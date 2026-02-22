@@ -44,11 +44,11 @@ export default async function TeamPage() {
 
 
   return (
-    <div>
+    <div className="animate-fade-in-up">
       <div className="mb-8 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Team</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">Team</h1>
+          <p className="mt-1.5 text-sm text-slate-500">
             {members.length} members working on Studio Dhaka projects
           </p>
         </div>
@@ -73,21 +73,21 @@ export default async function TeamPage() {
           return (
             <div
               key={member.id}
-              className="hover-lift overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+              className="hover-lift overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md"
             >
               {/* Accent strip */}
-              <div className="h-0.5 bg-gradient-to-r from-indigo-500/20 via-violet-500/20 to-transparent" />
+              <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 opacity-60" />
               {/* Header */}
               <div className="flex items-center gap-4 p-5 pb-0">
-                <div className={`avatar-gradient-${avatarIdx} flex h-12 w-12 items-center justify-center rounded-xl text-base font-bold text-white shadow-md shadow-black/10`}>
+                <div className={`avatar-gradient-${avatarIdx} flex h-14 w-14 items-center justify-center rounded-xl text-lg font-bold text-white shadow-lg shadow-black/15 ring-1 ring-white/20`}>
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-900">{member.name}</p>
+                  <p className="text-lg font-bold text-slate-900">{member.name}</p>
                   <p className="text-sm text-slate-500">{member.role}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xl font-bold text-slate-900 metric-value">
+                  <p className="text-2xl font-extrabold text-slate-900 metric-value">
                     {completionRate}%
                   </p>
                   <p className="text-xs text-slate-400">completed</p>

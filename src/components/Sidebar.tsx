@@ -63,15 +63,15 @@ export default function Sidebar({
   const avatarIdx = user.name.charCodeAt(0) % 6;
 
   return (
-    <aside className="flex h-screen w-64 flex-col bg-[#0f1117] text-slate-400">
+    <aside className="flex h-screen w-64 flex-col bg-gradient-to-b from-[#0c0e16] to-[#0f1220] text-slate-400">
       {/* Logo */}
-      <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white shadow-lg shadow-indigo-500/30">
+      <div className="flex items-center gap-3 border-b border-white/[0.08] px-5 py-5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-base font-bold text-white shadow-lg shadow-indigo-500/40 ring-1 ring-white/20">
           A
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">ArchSync</p>
-          <p className="text-xs text-slate-600">Studio Dhaka</p>
+          <p className="text-sm font-bold text-white tracking-tight">ArchSync</p>
+          <p className="text-[11px] text-slate-500">Studio Dhaka</p>
         </div>
       </div>
 
@@ -85,10 +85,10 @@ export default function Sidebar({
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
-                className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+                className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium ${
                   active
-                    ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-1.5 before:h-[calc(100%-12px)] before:w-[3px] before:rounded-full before:bg-indigo-400"
-                    : "text-slate-500 hover:bg-white/[0.06] hover:text-slate-300"
+                    ? "bg-gradient-to-r from-indigo-500/20 to-violet-500/10 text-white shadow-sm shadow-indigo-500/10 before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-400 before:shadow-sm before:shadow-indigo-400/50"
+                    : "text-slate-500 hover:bg-white/[0.07] hover:text-slate-200"
                 }`}
               >
                 {item.icon}
@@ -115,13 +115,13 @@ export default function Sidebar({
                   key={project.id}
                   href={`/projects/${project.id}`}
                   onClick={onNavigate}
-                  className={`relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+                  className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
                     active
-                      ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-1.5 before:h-[calc(100%-12px)] before:w-[3px] before:rounded-full before:bg-indigo-400"
-                      : "text-slate-500 hover:bg-white/[0.06] hover:text-slate-300"
+                      ? "bg-gradient-to-r from-indigo-500/20 to-violet-500/10 text-white shadow-sm shadow-indigo-500/10 before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-400 before:shadow-sm before:shadow-indigo-400/50"
+                      : "text-slate-500 hover:bg-white/[0.07] hover:text-slate-200"
                   }`}
                 >
-                  <span className={`flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br ${gradient} text-[10px] font-semibold text-white shadow-sm shadow-black/20`}>
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-[11px] font-bold text-white shadow-md shadow-black/25 ring-1 ring-white/10`}>
                     {project.name[0]}
                   </span>
                   <span className="flex-1 truncate">{project.name}</span>
@@ -138,9 +138,9 @@ export default function Sidebar({
       </nav>
 
       {/* User section */}
-      <div className="border-t border-white/[0.06] p-3">
-        <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <div className={`avatar-gradient-${avatarIdx} flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium text-white shadow-sm`}>
+      <div className="border-t border-white/[0.08] p-3">
+        <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-2.5">
+          <div className={`avatar-gradient-${avatarIdx} flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white shadow-md ring-1 ring-white/10`}>
             {initials}
           </div>
           <div className="flex-1 min-w-0">

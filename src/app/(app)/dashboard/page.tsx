@@ -172,25 +172,25 @@ export default async function DashboardPage({
   const allTags = Array.from(new Set(myActive.flatMap((t) => t.tags)));
 
   return (
-    <div className="space-y-6">
+    <div className="animate-fade-in-up space-y-6">
       {/* ── Header ─────────────────────────────────────── */}
       <div className="flex items-end justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
               {greeting}, {session?.name.split(" ")[0]}
             </h1>
             {roleLabel && (
-              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+              <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shadow-sm ${
                 isAdmin
-                  ? "bg-amber-50 text-amber-600"
-                  : "bg-indigo-50 text-indigo-600"
+                  ? "bg-gradient-to-r from-amber-100 to-orange-100 text-amber-700 ring-1 ring-amber-200/50"
+                  : "bg-gradient-to-r from-indigo-100 to-violet-100 text-indigo-700 ring-1 ring-indigo-200/50"
               }`}>
                 {roleLabel}
               </span>
             )}
           </div>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1.5 text-sm text-slate-500">
             {now.toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
@@ -199,9 +199,10 @@ export default async function DashboardPage({
             })}
           </p>
         </div>
-        <p className="text-sm text-slate-400">
-          {completionRate}% {isAdmin ? "overall" : "my"} completion
-        </p>
+        <div className="text-right">
+          <p className="text-3xl font-extrabold tracking-tight text-slate-900 metric-value">{completionRate}%</p>
+          <p className="text-xs text-slate-400">{isAdmin ? "overall" : "my"} completion</p>
+        </div>
       </div>
 
       {/* ── Metric Cards ───────────────────────────────── */}
@@ -268,11 +269,11 @@ export default async function DashboardPage({
         {/* Left Column — 2/3 width */}
         <div className="space-y-6 xl:col-span-2">
           {/* My Tasks */}
-          <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100/80 px-6 py-4">
+          <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
               <div className="flex items-center gap-3">
-                <h2 className="font-semibold text-slate-900">My Tasks</h2>
-                <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-600">
+                <h2 className="text-lg font-bold text-slate-900">My Tasks</h2>
+                <span className="rounded-full bg-gradient-to-r from-indigo-50 to-violet-50 px-3 py-0.5 text-xs font-bold text-indigo-600 ring-1 ring-indigo-100">
                   {filteredActive.length} active
                 </span>
               </div>
@@ -400,12 +401,12 @@ export default async function DashboardPage({
           </section>
 
           {/* Projects Overview */}
-          <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100/80 px-6 py-4">
-              <h2 className="font-semibold text-slate-900">
+          <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+              <h2 className="text-lg font-bold text-slate-900">
                 {!isAdmin ? "My Projects" : "Projects"}
               </h2>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs font-medium text-slate-400">
                 {visibleProjects.length} {!isAdmin ? "assigned" : "total"}
               </span>
             </div>
@@ -506,9 +507,9 @@ export default async function DashboardPage({
         {/* Right Column — 1/3 width */}
         <div className="space-y-6">
           {/* Activity Feed */}
-          <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="border-b border-slate-100/80 px-5 py-4">
-              <h2 className="font-semibold text-slate-900">Activity Feed</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
+            <div className="border-b border-slate-100 px-5 py-5">
+              <h2 className="text-lg font-bold text-slate-900">Activity Feed</h2>
             </div>
             <div className="divide-y divide-slate-50">
               {activities.length === 0 && (
@@ -533,9 +534,9 @@ export default async function DashboardPage({
           </section>
 
           {/* Upcoming Deadlines */}
-          <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100/80 px-5 py-4">
-              <h2 className="font-semibold text-slate-900">
+          <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
+            <div className="flex items-center justify-between border-b border-slate-100 px-5 py-5">
+              <h2 className="text-lg font-bold text-slate-900">
                 {!isAdmin ? "My Deadlines" : "Deadlines"}
               </h2>
               {overdueTasks > 0 && (
@@ -599,8 +600,8 @@ export default async function DashboardPage({
           </section>
 
           {/* Task Distribution */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 font-semibold text-slate-900">
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+            <h2 className="mb-4 text-lg font-bold text-slate-900">
               {!isAdmin ? "My Task Distribution" : "Task Distribution"}
             </h2>
             {/* Donut chart via conic-gradient */}
@@ -618,11 +619,11 @@ export default async function DashboardPage({
                     : "#e2e8f0",
                 }}
               >
-                <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white shadow-inner">
-                  <span className="text-2xl font-bold text-slate-900">
+                <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white shadow-lg shadow-black/5 ring-1 ring-slate-100">
+                  <span className="text-3xl font-extrabold text-slate-900 metric-value">
                     {totalTasks}
                   </span>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] font-medium text-slate-400">
                     {!isAdmin ? "my tasks" : "tasks"}
                   </span>
                 </div>
@@ -652,8 +653,8 @@ export default async function DashboardPage({
           </section>
 
           {/* Discipline Overview */}
-          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 font-semibold text-slate-900">Discipline Overview</h2>
+          <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-md">
+            <h2 className="mb-4 text-lg font-bold text-slate-900">Discipline Overview</h2>
             {disciplineSorted.length === 0 ? (
               <p className="py-4 text-center text-sm text-slate-400">
                 No discipline data yet
@@ -686,9 +687,9 @@ export default async function DashboardPage({
 
           {/* Team Workload — Admin & PM only */}
           {!isEmployee && (
-            <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-              <div className="border-b border-slate-100/80 px-5 py-4">
-                <h2 className="font-semibold text-slate-900">Team Workload</h2>
+            <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
+              <div className="border-b border-slate-100 px-5 py-5">
+                <h2 className="text-lg font-bold text-slate-900">Team Workload</h2>
               </div>
               <div className="divide-y divide-slate-50">
                 {members.map((member, idx) => {
@@ -754,9 +755,9 @@ export default async function DashboardPage({
 
           {/* Admin Quick Actions */}
           {isAdmin && (
-            <section className="rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-              <div className="border-b border-slate-100/80 px-5 py-4">
-                <h2 className="font-semibold text-slate-900">Administration</h2>
+            <section className="rounded-2xl border border-slate-200 bg-white shadow-md">
+              <div className="border-b border-slate-100 px-5 py-5">
+                <h2 className="text-lg font-bold text-slate-900">Administration</h2>
               </div>
               <div className="p-5 space-y-3">
                 <Link
@@ -808,28 +809,15 @@ function MetricCard({
   sub: string;
   accent: string;
 }) {
-  const accentMap: Record<string, { bg: string; text: string; ring: string }> = {
-    indigo: { bg: "bg-indigo-50", text: "text-indigo-600", ring: "ring-indigo-100" },
-    blue: { bg: "bg-blue-50", text: "text-blue-600", ring: "ring-blue-100" },
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", ring: "ring-emerald-100" },
-    red: { bg: "bg-red-50", text: "text-red-600", ring: "ring-red-100" },
-  };
-  const a = accentMap[accent] ?? accentMap.indigo;
-
   return (
-    <div className="hover-lift group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
-      {/* Accent gradient glows */}
-      <div
-        className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-[0.08]"
-        style={{ filter: "blur(24px)", background: accent === "red" ? "#ef4444" : accent === "emerald" ? "#10b981" : accent === "blue" ? "#3b82f6" : "#6366f1" }}
-      />
-      <div
-        className="pointer-events-none absolute -bottom-8 -left-8 h-16 w-16 rounded-full opacity-[0.04]"
-        style={{ filter: "blur(20px)", background: accent === "red" ? "#ef4444" : accent === "emerald" ? "#10b981" : accent === "blue" ? "#3b82f6" : "#6366f1" }}
-      />
-      <p className="relative text-sm text-slate-500">{label}</p>
-      <p className={`relative mt-1 text-3xl font-bold tracking-tight metric-value ${a.text}`}>{value}</p>
-      <p className="relative mt-1 text-xs text-slate-400/80">{sub}</p>
+    <div className={`hover-lift group relative overflow-hidden rounded-2xl p-6 shadow-lg metric-card-${accent}`}>
+      {/* Decorative elements */}
+      <div className="pointer-events-none absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/10 blur-xl" />
+      <div className="pointer-events-none absolute -bottom-6 -left-6 h-16 w-16 rounded-full bg-white/5 blur-lg" />
+      <div className="pointer-events-none absolute right-4 top-4 h-8 w-8 rounded-full bg-white/10" />
+      <p className="relative text-sm font-medium text-white/80">{label}</p>
+      <p className="relative mt-2 text-4xl font-extrabold tracking-tight metric-value text-white">{value}</p>
+      <p className="relative mt-1 text-xs text-white/60">{sub}</p>
     </div>
   );
 }

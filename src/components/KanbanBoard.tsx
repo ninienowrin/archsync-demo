@@ -252,8 +252,8 @@ function DroppableColumn({
       ref={setNodeRef}
       role="group"
       aria-label={`${title} column, ${count} tasks`}
-      className={`flex min-h-[500px] flex-col rounded-xl border border-slate-200/50 border-t-4 p-3 transition-all ${color} ${bg} ${
-        isOver ? "ring-2 ring-indigo-300/60 bg-indigo-50/40 scale-[1.01]" : ""
+      className={`flex min-h-[500px] flex-col rounded-2xl border border-slate-200 border-t-4 bg-white/60 p-3 shadow-sm backdrop-blur-sm transition-all ${color} ${
+        isOver ? "ring-2 ring-indigo-400/50 bg-indigo-50/50 scale-[1.01] shadow-md shadow-indigo-500/5" : ""
       }`}
     >
       <div className="mb-3 flex items-center justify-between px-1">
@@ -411,11 +411,11 @@ function TaskCard({ task, overlay }: { task: Task; overlay?: boolean }) {
 
   return (
     <div
-      className={`hover-lift cursor-grab rounded-xl border border-slate-200/80 bg-white p-3.5 shadow-sm ${priorityBorder} ${
+      className={`hover-lift cursor-grab rounded-xl border border-slate-200 bg-white p-4 shadow-sm ${priorityBorder} ${
         overlay ? "drag-overlay" : ""
       }`}
     >
-      <p className="mb-2 text-sm font-medium text-slate-800">{task.title}</p>
+      <p className="mb-2 text-sm font-semibold text-slate-800">{task.title}</p>
       {task.description && (
         <p className="mb-2 line-clamp-2 text-xs leading-relaxed text-slate-400">
           {task.description}
@@ -510,7 +510,7 @@ function TaskModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="task-modal-title"
-        className="modal-content w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white/95 shadow-2xl ring-1 ring-black/[0.06] backdrop-blur-sm"
+        className="modal-content w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl shadow-black/20 ring-1 ring-black/[0.08]"
         onClick={(e) => e.stopPropagation()}
       >
         <form action={onSave}>
