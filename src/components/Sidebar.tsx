@@ -63,15 +63,15 @@ export default function Sidebar({
   const avatarIdx = user.name.charCodeAt(0) % 6;
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-white/40 bg-white/40 text-slate-500 backdrop-blur-2xl">
+    <aside className="flex h-screen w-64 flex-col border-r border-white/[0.06] bg-[#111318]/90 text-slate-400 backdrop-blur-2xl backdrop-saturate-150">
       {/* Logo */}
-      <div className="flex items-center gap-3 border-b border-slate-200/60 px-5 py-5">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-base font-bold text-white shadow-lg shadow-indigo-500/25">
+      <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-5">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 text-base font-bold text-white shadow-lg shadow-violet-500/30">
           A
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-800 tracking-tight">ArchSync</p>
-          <p className="text-[11px] text-slate-400">Studio Dhaka</p>
+          <p className="text-sm font-bold text-white tracking-tight">ArchSync</p>
+          <p className="text-[11px] text-slate-500">Studio Dhaka</p>
         </div>
       </div>
 
@@ -87,8 +87,8 @@ export default function Sidebar({
                 onClick={onNavigate}
                 className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all ${
                   active
-                    ? "bg-white/70 text-slate-900 shadow-sm shadow-slate-200/60 before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-500"
-                    : "text-slate-500 hover:bg-white/50 hover:text-slate-700"
+                    ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-400 before:shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                    : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200"
                 }`}
               >
                 {item.icon}
@@ -101,7 +101,7 @@ export default function Sidebar({
         {/* Projects */}
         <div>
           <div className="mb-2 flex items-center justify-between px-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">
               Projects
             </p>
             {user.systemRole !== "employee" && <CreateProjectModal />}
@@ -117,11 +117,11 @@ export default function Sidebar({
                   onClick={onNavigate}
                   className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all ${
                     active
-                      ? "bg-white/70 text-slate-900 shadow-sm shadow-slate-200/60 before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-500"
-                      : "text-slate-500 hover:bg-white/50 hover:text-slate-700"
+                      ? "bg-white/[0.08] text-white before:absolute before:left-0 before:top-2 before:h-[calc(100%-16px)] before:w-[3px] before:rounded-full before:bg-indigo-400 before:shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                      : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200"
                   }`}
                 >
-                  <span className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-[11px] font-bold text-white shadow-sm ring-1 ring-black/5`}>
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-[11px] font-bold text-white shadow-md shadow-black/30 ring-1 ring-white/10`}>
                     {project.name[0]}
                   </span>
                   <span className="flex-1 truncate">{project.name}</span>
@@ -138,22 +138,22 @@ export default function Sidebar({
       </nav>
 
       {/* User section */}
-      <div className="border-t border-slate-200/60 p-3">
-        <div className="flex items-center gap-3 rounded-xl bg-white/50 px-3 py-2.5">
-          <div className={`avatar-gradient-${avatarIdx} flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white shadow-sm ring-1 ring-black/5`}>
+      <div className="border-t border-white/[0.06] p-3">
+        <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3 py-2.5">
+          <div className={`avatar-gradient-${avatarIdx} flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold text-white shadow-md ring-1 ring-white/10`}>
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-slate-800">
+            <p className="truncate text-sm font-medium text-slate-200">
               {user.name}
             </p>
-            <p className="truncate text-xs text-slate-400">
+            <p className="truncate text-xs text-slate-500">
               {user.role}
               {user.systemRole !== "employee" && (
                 <span className={`ml-1.5 inline-block rounded px-1 py-px text-[10px] font-semibold uppercase ${
                   user.systemRole === "admin"
-                    ? "bg-amber-100 text-amber-600"
-                    : "bg-indigo-100 text-indigo-600"
+                    ? "bg-amber-500/15 text-amber-400"
+                    : "bg-indigo-500/15 text-indigo-400"
                 }`}>
                   {user.systemRole === "admin" ? "Admin" : "PM"}
                 </span>
@@ -163,7 +163,7 @@ export default function Sidebar({
           <form action={logoutAction}>
             <button
               type="submit"
-              className="rounded p-1.5 text-slate-400 transition-colors hover:bg-white/60 hover:text-slate-600"
+              className="rounded p-1.5 text-slate-600 transition-colors hover:bg-white/[0.06] hover:text-slate-300"
               title="Sign out"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>

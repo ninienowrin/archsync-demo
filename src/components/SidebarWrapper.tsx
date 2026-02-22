@@ -25,7 +25,7 @@ export default function SidebarWrapper({
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center rounded-xl border border-white/50 bg-white/60 text-slate-600 shadow-lg shadow-slate-200/40 backdrop-blur-xl lg:hidden"
+        className="fixed left-3 top-3 z-40 flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-[#111318]/80 text-slate-300 shadow-xl shadow-black/30 backdrop-blur-xl lg:hidden"
         aria-label="Open sidebar"
       >
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -45,11 +45,11 @@ export default function SidebarWrapper({
           onClick={() => setMobileOpen(false)}
         >
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
 
           {/* Sidebar panel */}
           <div
-            className="relative h-full w-64 shadow-2xl shadow-slate-400/20"
+            className="relative h-full w-64 shadow-2xl shadow-black/40"
             onClick={(e) => e.stopPropagation()}
             style={{ animation: "slideRight 0.2s ease-out" }}
           >
@@ -57,7 +57,7 @@ export default function SidebarWrapper({
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-slate-400 hover:bg-white/50 hover:text-slate-600"
+              className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-slate-500 hover:bg-white/[0.06] hover:text-slate-300"
               aria-label="Close sidebar"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
