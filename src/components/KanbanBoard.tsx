@@ -57,23 +57,20 @@ import {
 } from "@/lib/constants";
 
 export default function KanbanBoard({
-  initialTasks,
+  tasks,
+  setTasks,
   projectId,
   members,
 }: {
-  initialTasks: Task[];
+  tasks: Task[];
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
   projectId: string;
   members: Member[];
 }) {
-  const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [addingToColumn, setAddingToColumn] = useState<string | null>(null);
 
-  // Sync with server data when router.refresh() delivers fresh props
-  useEffect(() => {
-    setTasks(initialTasks);
-  }, [initialTasks]);
   const { toast } = useToast();
   const router = useRouter();
   const [, startTransition] = useTransition();

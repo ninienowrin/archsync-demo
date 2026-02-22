@@ -2,12 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import KanbanBoard from "@/components/KanbanBoard";
 import ProjectSettings from "@/components/ProjectSettings";
 import ProjectDescription from "@/components/ProjectDescription";
-import ProjectTabs from "@/components/ProjectTabs";
-import ProjectMembers from "@/components/ProjectMembers";
-import ProjectDashboard from "@/components/ProjectDashboard";
+import ProjectContent from "@/components/ProjectContent";
 import { PROJECT_PHASES, tagColors } from "@/lib/constants";
 
 export default async function ProjectPage({
@@ -110,34 +107,13 @@ export default async function ProjectPage({
   // ── Phase stepper ──
   const currentPhaseIdx = PROJECT_PHASES.findIndex((p) => p.value === project.phase);
 
-  // ── Per-member contribution stats ──
-  const memberContributions = projectMembers.map((pm) => {
-    const memberTasks = project.tasks.filter((t) => t.assigneeId === pm.user.id);
-    const memberTotal = memberTasks.length;
-    const memberDone = memberTasks.filter((t) => t.status === "done").length;
-    const memberInProgress = memberTasks.filter((t) => t.status === "in_progress").length;
-    const memberReview = memberTasks.filter((t) => t.status === "review").length;
-    const memberBacklog = memberTasks.filter((t) => t.status === "backlog").length;
-    const memberTotalHours = memberTasks.reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
-    const memberCompletedHours = memberTasks
-      .filter((t) => t.status === "done")
-      .reduce((sum, t) => sum + (t.estimatedHours ?? 0), 0);
-
-    return {
-      id: pm.user.id,
-      name: pm.user.name,
-      role: pm.user.role,
-      projectRole: pm.role,
-      totalTasks: memberTotal,
-      doneTasks: memberDone,
-      inProgressTasks: memberInProgress,
-      reviewTasks: memberReview,
-      backlogTasks: memberBacklog,
-      completionRate: memberTotal > 0 ? Math.round((memberDone / memberTotal) * 100) : 0,
-      totalHours: memberTotalHours,
-      completedHours: memberCompletedHours,
-    };
-  });
+  // ── Serialized project members for client-side stat computation ──
+  const serializedProjectMembers = projectMembers.map((pm) => ({
+    userId: pm.user.id,
+    name: pm.user.name,
+    role: pm.user.role,
+    projectRole: pm.role,
+  }));
 
   // ── Serialized activities for dashboard ──
   const serializedActivities = projectActivities.map((a) => ({
@@ -148,35 +124,6 @@ export default async function ProjectPage({
     user: a.user,
     task: a.task,
   }));
-
-  // ── Upcoming deadlines ──
-  const deadlines = project.tasks
-    .filter((t) => t.dueDate && t.status !== "done")
-    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
-    .slice(0, 8)
-    .map((t) => ({
-      id: t.id,
-      title: t.title,
-      dueDate: t.dueDate!.toISOString(),
-      status: t.status,
-      assignee: t.assignee,
-    }));
-
-  // ── Dashboard props ──
-  const projectStats = {
-    total,
-    done,
-    inProgress: inProg,
-    review,
-    backlog,
-    overdue,
-    completionRate: progress,
-    totalHours,
-    completedHours,
-    remainingHours,
-  };
-
-  const distribution = { done, review, in_progress: inProg, backlog };
 
   return (
     <div className="animate-fade-in-up">
@@ -339,33 +286,14 @@ export default async function ProjectPage({
         </div>
       </div>
 
-      {/* Tabbed content: Board | Dashboard | Members */}
-      <ProjectTabs
-        board={
-          <KanbanBoard
-            initialTasks={serializedTasks}
-            projectId={project.id}
-            members={allUsers}
-          />
-        }
-        dashboard={
-          <ProjectDashboard
-            stats={projectStats}
-            distribution={distribution}
-            memberContributions={memberContributions}
-            disciplines={topDisciplines}
-            activities={serializedActivities}
-            deadlines={deadlines}
-          />
-        }
-        members={
-          <ProjectMembers
-            projectId={project.id}
-            members={memberContributions}
-            allUsers={allUsers}
-            systemRole={systemRole}
-          />
-        }
+      {/* Tabbed content: Board | Dashboard | Members — shared task state for instant updates */}
+      <ProjectContent
+        initialTasks={serializedTasks}
+        projectId={project.id}
+        members={allUsers}
+        projectMembers={serializedProjectMembers}
+        activities={serializedActivities}
+        systemRole={systemRole}
       />
     </div>
   );
