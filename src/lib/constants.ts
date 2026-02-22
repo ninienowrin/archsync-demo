@@ -110,6 +110,18 @@ export const phaseConfig: Record<string, { label: string; short: string; color: 
   PROJECT_PHASES.map((p) => [p.value, { label: p.label, short: p.short, color: p.color, text: p.text }])
 );
 
+// ── Project member roles ──
+
+export const PROJECT_MEMBER_ROLES = [
+  { value: "owner",   label: "Owner",   color: "bg-amber-100 text-amber-700" },
+  { value: "manager", label: "Manager", color: "bg-indigo-100 text-indigo-700" },
+  { value: "member",  label: "Member",  color: "bg-slate-100 text-slate-600" },
+] as const;
+
+export const memberRoleConfig: Record<string, { label: string; color: string }> = Object.fromEntries(
+  PROJECT_MEMBER_ROLES.map((r) => [r.value, { label: r.label, color: r.color }])
+);
+
 // ── System roles ──
 
 export const SYSTEM_ROLES = ["admin", "project_manager", "employee"] as const;

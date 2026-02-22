@@ -5,6 +5,9 @@ import Link from "next/link";
 import KanbanBoard from "@/components/KanbanBoard";
 import ProjectSettings from "@/components/ProjectSettings";
 import ProjectDescription from "@/components/ProjectDescription";
+import ProjectTabs from "@/components/ProjectTabs";
+import ProjectMembers from "@/components/ProjectMembers";
+import ProjectDashboard from "@/components/ProjectDashboard";
 import { PROJECT_PHASES, tagColors } from "@/lib/constants";
 
 export default async function ProjectPage({
@@ -16,28 +19,42 @@ export default async function ProjectPage({
   const session = await getSession();
   const systemRole = session?.systemRole ?? "employee";
 
-  const project = await prisma.project.findUnique({
-    where: { id },
-    include: {
-      tasks: {
-        include: {
-          assignee: { select: { id: true, name: true, role: true } },
-          comments: {
-            include: { author: { select: { id: true, name: true } } },
-            orderBy: { createdAt: "asc" },
+  const [project, allUsers, projectMembers, projectActivities] = await Promise.all([
+    prisma.project.findUnique({
+      where: { id },
+      include: {
+        tasks: {
+          include: {
+            assignee: { select: { id: true, name: true, role: true } },
+            comments: {
+              include: { author: { select: { id: true, name: true } } },
+              orderBy: { createdAt: "asc" },
+            },
           },
+          orderBy: { position: "asc" },
         },
-        orderBy: { position: "asc" },
       },
-    },
-  });
+    }),
+    prisma.user.findMany({
+      select: { id: true, name: true, role: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.projectMember.findMany({
+      where: { projectId: id },
+      include: { user: { select: { id: true, name: true, role: true } } },
+    }),
+    prisma.activity.findMany({
+      where: { projectId: id },
+      include: {
+        user: { select: { name: true } },
+        task: { select: { title: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    }),
+  ]);
 
   if (!project) notFound();
-
-  const members = await prisma.user.findMany({
-    select: { id: true, name: true, role: true },
-    orderBy: { name: "asc" },
-  });
 
   const serializedTasks = project.tasks.map((t) => ({
     ...t,
@@ -51,6 +68,7 @@ export default async function ProjectPage({
     })),
   }));
 
+  // ── Task stats ──
   const total = project.tasks.length;
   const done = project.tasks.filter((t) => t.status === "done").length;
   const inProg = project.tasks.filter((t) => t.status === "in_progress").length;
@@ -63,7 +81,7 @@ export default async function ProjectPage({
     (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "done"
   ).length;
 
-  // Unique assignees
+  // ── Unique assignees (for header avatars) ──
   const assignees = Array.from(
     new Map(
       project.tasks
@@ -72,7 +90,7 @@ export default async function ProjectPage({
     ).values()
   );
 
-  // Discipline tag counts
+  // ── Discipline tag counts ──
   const disciplineCounts: Record<string, number> = {};
   for (const task of project.tasks) {
     for (const tag of task.tags) {
@@ -82,8 +100,66 @@ export default async function ProjectPage({
   const topDisciplines = Object.entries(disciplineCounts)
     .sort((a, b) => b[1] - a[1]);
 
-  // Phase stepper
+  // ── Phase stepper ──
   const currentPhaseIdx = PROJECT_PHASES.findIndex((p) => p.value === project.phase);
+
+  // ── Per-member contribution stats ──
+  const memberContributions = projectMembers.map((pm) => {
+    const memberTasks = project.tasks.filter((t) => t.assigneeId === pm.user.id);
+    const memberTotal = memberTasks.length;
+    const memberDone = memberTasks.filter((t) => t.status === "done").length;
+    const memberInProgress = memberTasks.filter((t) => t.status === "in_progress").length;
+    const memberReview = memberTasks.filter((t) => t.status === "review").length;
+    const memberBacklog = memberTasks.filter((t) => t.status === "backlog").length;
+    return {
+      id: pm.user.id,
+      name: pm.user.name,
+      role: pm.user.role,
+      projectRole: pm.role,
+      totalTasks: memberTotal,
+      doneTasks: memberDone,
+      inProgressTasks: memberInProgress,
+      reviewTasks: memberReview,
+      backlogTasks: memberBacklog,
+      completionRate: memberTotal > 0 ? Math.round((memberDone / memberTotal) * 100) : 0,
+    };
+  });
+
+  // ── Serialized activities for dashboard ──
+  const serializedActivities = projectActivities.map((a) => ({
+    id: a.id,
+    action: a.action,
+    details: a.details,
+    createdAt: a.createdAt.toISOString(),
+    user: a.user,
+    task: a.task,
+  }));
+
+  // ── Upcoming deadlines ──
+  const deadlines = project.tasks
+    .filter((t) => t.dueDate && t.status !== "done")
+    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+    .slice(0, 8)
+    .map((t) => ({
+      id: t.id,
+      title: t.title,
+      dueDate: t.dueDate!.toISOString(),
+      status: t.status,
+      assignee: t.assignee,
+    }));
+
+  // ── Dashboard props ──
+  const projectStats = {
+    total,
+    done,
+    inProgress: inProg,
+    review,
+    backlog,
+    overdue,
+    completionRate: progress,
+  };
+
+  const distribution = { done, review, in_progress: inProg, backlog };
 
   return (
     <div className="animate-fade-in-up">
@@ -238,10 +314,33 @@ export default async function ProjectPage({
         </div>
       </div>
 
-      <KanbanBoard
-        initialTasks={serializedTasks}
-        projectId={project.id}
-        members={members}
+      {/* Tabbed content: Board | Dashboard | Members */}
+      <ProjectTabs
+        board={
+          <KanbanBoard
+            initialTasks={serializedTasks}
+            projectId={project.id}
+            members={allUsers}
+          />
+        }
+        dashboard={
+          <ProjectDashboard
+            stats={projectStats}
+            distribution={distribution}
+            memberContributions={memberContributions}
+            disciplines={topDisciplines}
+            activities={serializedActivities}
+            deadlines={deadlines}
+          />
+        }
+        members={
+          <ProjectMembers
+            projectId={project.id}
+            members={memberContributions}
+            allUsers={allUsers}
+            systemRole={systemRole}
+          />
+        }
       />
     </div>
   );
