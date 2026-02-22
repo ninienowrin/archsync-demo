@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import AddMemberForm from "@/components/AddMemberForm";
 import { statusDotColors as statusDot, statusLabels as statusLabel } from "@/lib/constants";
 
 export default async function TeamPage() {
   const session = await getSession();
+  if (session?.systemRole !== "admin") redirect("/dashboard");
+
   const members = await prisma.user.findMany({
     include: {
       tasks: {
@@ -73,9 +76,10 @@ export default async function TeamPage() {
               : 0;
 
           return (
-            <div
+            <Link
               key={member.id}
-              className="hover-lift overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md"
+              href={`/team/${member.id}`}
+              className="group block hover-lift overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md transition-colors hover:border-indigo-200"
             >
               {/* Accent strip */}
               <div className="h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 opacity-60" />
@@ -85,7 +89,7 @@ export default async function TeamPage() {
                   {initials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-lg font-bold text-slate-900">{member.name}</p>
+                  <p className="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{member.name}</p>
                   <p className="text-sm text-slate-500">{member.role}</p>
                 </div>
                 <div className="text-right">
@@ -147,10 +151,9 @@ export default async function TeamPage() {
                   </p>
                   <div className="space-y-1.5">
                     {member.tasks.map((task) => (
-                      <Link
+                      <div
                         key={task.id}
-                        href={`/projects/${task.projectId}`}
-                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-50/60"
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5"
                       >
                         <span
                           className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${statusDot[task.status]}`}
@@ -161,12 +164,12 @@ export default async function TeamPage() {
                         <span className="ml-auto flex-shrink-0 text-[10px] text-slate-400">
                           {statusLabel[task.status]}
                         </span>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </div>
               )}
-            </div>
+            </Link>
           );
         })}
       </div>

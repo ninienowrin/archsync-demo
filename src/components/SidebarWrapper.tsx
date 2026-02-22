@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import Sidebar from "./Sidebar";
 
 type Project = { id: string; name: string; phase: string };
-type User = { name: string; role: string; systemRole: string };
+type User = { id: string; name: string; role: string; systemRole: string };
 
 export default function SidebarWrapper({
   projects,
