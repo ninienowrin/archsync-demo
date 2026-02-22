@@ -144,16 +144,59 @@ export default function KanbanBoard({
       ? members.find((m) => m.id === assigneeId) ?? null
       : null;
 
+    // Keep snapshot for rollback
+    const snapshot = tasks;
+
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
-          ? { ...t, title, description, priority, status, assigneeId, assignee, dueDate: dueDate || null, tags }
+          ? { ...t, title, description, priority, status, assigneeId: assigneeId || null, assignee, dueDate: dueDate || null, tags }
           : t
       )
     );
     setSelectedTask(null);
-    toast("Task updated");
-    await updateTask(formData);
+
+    try {
+      await updateTask(formData);
+      toast("Task updated");
+    } catch {
+      setTasks(snapshot);
+      toast("Failed to update task", "error");
+    }
+  }
+
+  async function handleAddComment(taskId: string, body: string) {
+    const formData = new FormData();
+    formData.set("taskId", taskId);
+    formData.set("body", body);
+
+    try {
+      await addComment(formData);
+      // Update comments in local state so the modal refreshes
+      const session = { name: "You" }; // placeholder for optimistic display
+      const newComment: Comment = {
+        id: "temp-" + Date.now(),
+        body,
+        author: { id: "", name: session.name },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, comments: [...(t.comments ?? []), newComment] }
+            : t
+        )
+      );
+      if (selectedTask?.id === taskId) {
+        setSelectedTask((prev) =>
+          prev ? { ...prev, comments: [...(prev.comments ?? []), newComment] } : prev
+        );
+      }
+      toast("Comment added");
+    } catch {
+      toast("Failed to add comment", "error");
+    }
   }
 
   async function handleDeleteTask() {
@@ -220,6 +263,7 @@ export default function KanbanBoard({
           onClose={() => setSelectedTask(null)}
           onSave={handleUpdateTask}
           onDelete={handleDeleteTask}
+          onComment={handleAddComment}
         />
       )}
     </>
@@ -474,6 +518,7 @@ function TaskModal({
   onClose,
   onSave,
   onDelete,
+  onComment,
 }: {
   task: Task;
   projectId: string;
@@ -481,10 +526,12 @@ function TaskModal({
   onClose: () => void;
   onSave: (formData: FormData) => void;
   onDelete: () => void;
+  onComment: (taskId: string, body: string) => void;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>(task.tags);
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
+  const [commentText, setCommentText] = useState("");
   const tagDropdownRef = useRef<HTMLDivElement>(null);
   const modalRef = useModalA11y(true, onClose);
 
@@ -723,28 +770,35 @@ function TaskModal({
             </div>
           </div>
 
-          {/* Comment input — separate from main form */}
+          {/* Comment input — outside the main form to avoid nested forms */}
           <div className="border-t border-slate-100 px-6 py-3">
-            <form
-              action={async (formData: FormData) => {
-                formData.set("taskId", task.id);
-                await addComment(formData);
-              }}
-              className="flex gap-2"
-            >
+            <div className="flex gap-2">
               <input
-                name="body"
-                required
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Add a comment..."
                 className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && commentText.trim()) {
+                    e.preventDefault();
+                    onComment(task.id, commentText.trim());
+                    setCommentText("");
+                  }
+                }}
               />
               <button
-                type="submit"
+                type="button"
+                onClick={() => {
+                  if (commentText.trim()) {
+                    onComment(task.id, commentText.trim());
+                    setCommentText("");
+                  }
+                }}
                 className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200"
               >
                 Send
               </button>
-            </form>
+            </div>
           </div>
 
           {/* Footer */}
